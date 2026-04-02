@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poornima University | Discover Excellence</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <script>
+        // Apply Branding from Admin
+        const branding = JSON.parse(localStorage.getItem('pu_branding')) || {
+            name: 'Poornima University',
+            tagline: 'Shaping Your Future, Inspiring Excellence',
+            color: '#3b82f6'
+        };
+        document.title = branding.name + ' | Discover Excellence';
+        document.documentElement.style.setProperty('--primary-color', branding.color);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const logoText = document.querySelector('.logo span');
+            const heroTitle = document.querySelector('.hero-content h1');
+            const taglineText = heroTitle.firstChild; // First line of h1
+
+            if (logoText) logoText.innerText = branding.name;
+            if (heroTitle) {
+                const parts = branding.tagline.split(',');
+                heroTitle.innerHTML = parts[0] + (parts[1] ? '<br><span class="highlight">' + parts[1] + '</span>' : '');
+            }
+        });
+    </script>
+    <!-- Mock Landing Page -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Poornima University</span>
+            </div>
+            <div class="nav-links">
+                <a href="#about-us">About Us</a>
+                <a href="#academics">Academics</a>
+                <a href="https://admission.poornima.edu.in/" target="_blank">Admissions</a>
+                <a href="#">Placements</a>
+                <a href="https://www.poornima.edu.in/life-at-poornima/menu-facility" target="_blank">Mess Menu</a>
+                <a href="https://www.poornima.edu.in/" class="btn-primary" target="_blank">More about Poornima</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Shaping Your Future, <br><span class="highlight">Inspiring Excellence</span></h1>
+            <p>Join Rajasthan's leading educational institution. Experience world-class academics, unmatched placements,
+                and vibrant campus life.</p>
+            <div class="hero-buttons">
+                <button class="btn-primary">Explore Programs</button>
+                <a href="https://www.poornima.edu.in/life-at-poornima/events" class="btn-outline" target="_blank"
+                    style="text-decoration: none; display: inline-block;">Virtual Tour</a>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-card">
+                <h3>250+</h3>
+                <p>Top Recruiters</p>
+            </div>
+            <div class="stat-card">
+                <h3>32</h3>
+                <p>Acres Campus</p>
+            </div>
+            <div class="stat-card">
+                <h3>A+</h3>
+                <p>Academic Excellence</p>
+            </div>
+        </div>
+    </header>
+
+    <section class="features" id="academics">
+        <div class="section-title">
+            <h2>Why Choose Poornima?</h2>
+            <p>Empowering students to lead in a dynamic world.</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-box">
+                <div class="feature-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                <h3>Advanced IT Labs</h3>
+                <p>State-of-the-art infrastructure for hands-on technical learning.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon"><i class="fa-solid fa-briefcase"></i></div>
+                <h3>Stellar Placements</h3>
+                <p>Dedicated training cell with industry leading hiring partners.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon"><i class="fa-solid fa-futbol"></i></div>
+                <h3>Vibrant Campus Life</h3>
+                <p>Extensive sports facilities and collaboration with RUFC.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Chatbot Widget -->
+    <div class="chatbot-widget-container">
+        <!-- Chat Window -->
+        <div class="chat-window" id="chat-window">
+            <div class="chat-header">
+                <div class="header-info">
+                    <div class="bot-avatar">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=4A90E2"
+                            alt="Bot Avatar" />
+                    </div>
+                    <div>
+                        <h2>PU Guide Bot</h2>
+                        <p>Ask me anything!</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+                    <button id="close-chat" title="Close"><i class="fa-solid fa-times"></i></button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages populate here -->
+            </div>
+
+            <div class="quick-replies" id="quick-replies">
+                <button class="quick-reply" onclick="sendQuickReply('Location')">Campus</button>
+                <button class="quick-reply" onclick="sendQuickReply('Programs')">Programs</button>
+                <button class="quick-reply" onclick="sendQuickReply('Placements')">Placements</button>
+                <button class="quick-reply" onclick="sendQuickReply('Fees')">Scholarships</button>
+            </div>
+
+            <div class="chat-input-container">
+                <input type="text" id="user-input" placeholder="Type your question..." autocomplete="off">
+                <button id="send-btn" title="Send"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- Floating Button -->
+        <button class="floating-btn" id="floating-btn" title="Open Chat">
+            <i class="fa-solid fa-comment-dots"></i>
+        </button>
+    </div>
+    +
+    <footer class="site-footer" id="about-us">
+        <div class="footer-content">
+            <h3>Made by</h3>
+            <ul class="creators-list">
+                <li>Namita Raj Mehra</li>
+                <li>Manoj Kumar Meena</li>
+                <li> Subham Soni</li>
+                <li>Priyanka Mahlawat</li>
+            </ul>
+            <div class="footer-admin">
+                <a href="login.html"
+                    style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; opacity: 0.6;"><i
+                        class="fa-solid fa-lock"></i> Admin Portal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
