@@ -348,6 +348,12 @@ body {
   outline: none;
 }
 
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
 /* Data Table */
 .section-card {
   background-color: var(--white);

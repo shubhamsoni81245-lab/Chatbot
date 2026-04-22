@@ -144,11 +144,15 @@
                                     <option>Last 30 Days</option>
                                 </select>
                             </div>
-                            <canvas id="trafficChart"></canvas>
+                            <div class="chart-container">
+                                <canvas id="trafficChart"></canvas>
+                            </div>
                         </div>
                         <div class="chart-box donut-chart">
                             <h3>Inquiry Categories</h3>
-                            <canvas id="categoryChart"></canvas>
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
                         </div>
                     </div>
 
@@ -311,7 +315,15 @@
         </main>
     </div>
 
-    <script src="admin.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"
+            }
+        }
+    </script>
+    <script type="module" src="admin.js"></script>
 </body>
 
 </html>

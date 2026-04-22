@@ -46,7 +46,6 @@
                 <a href="https://admission.poornima.edu.in/" target="_blank">Admissions</a>
                 <a href="#">Placements</a>
                 <a href="https://www.poornima.edu.in/life-at-poornima/menu-facility" target="_blank">Mess Menu</a>
-                <a href="https://www.poornima.edu.in/" class="btn-primary" target="_blank">More about Poornima</a>
             </div>
         </div>
     </nav>
@@ -164,7 +163,15 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"
+            }
+        }
+    </script>
+    <script type="module" src="script.js"></script>
 </body>
 
 </html>

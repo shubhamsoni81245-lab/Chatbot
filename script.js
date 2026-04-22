@@ -2,6 +2,23 @@
 // Project name: projects/556576848477
 // Project number: 556576848477
 // Project id: gen-lang-client-0927007445
+
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCJNlX4nS00qIxF0lW5AttjYEPOlcETb-Y",
+    authDomain: "smart-collage-project.firebaseapp.com",
+    projectId: "smart-collage-project",
+    storageBucket: "smart-collage-project.firebasestorage.app",
+    messagingSenderId: "157281122997",
+    appId: "1:157281122997:web:e7e6654e1d0a0b2fbd5cfc",
+    measurementId: "G-HQY0GNNNJG"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 document.addEventListener('DOMContentLoaded', () => {
     // UI Elements
     const floatingBtn = document.getElementById('floating-btn');
@@ -58,18 +75,39 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadKnowledge() {
         const activeId = localStorage.getItem('active_college_slug') || 'pu';
         try {
-            const savedData = localStorage.getItem(`kb_${activeId}`);
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                if (data.length > 0) {
-                    knowledgeResponses = data.map(p => ({
-                        keywords: p.keywords.split(',').map(k => k.trim()),
-                        response: p.response
-                    }));
+            const docRef = doc(db, "colleges", activeId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.brand_color) {
+                    document.documentElement.style.setProperty('--primary-color', data.brand_color);
+                    localStorage.setItem('pu_branding', JSON.stringify({ name: data.name, tagline: data.tagline, color: data.brand_color }));
+                }
+                
+                if (data.knowledge) {
+                    const kbData = data.knowledge;
+                    if (kbData.length > 0) {
+                        knowledgeResponses = kbData.map(p => ({
+                            keywords: p.keywords.split(',').map(k => k.trim()),
+                            response: p.response
+                        }));
+                    }
+                }
+            } else {
+                // Fallback to local storage if Firebase doesn't have it yet for migration
+                const savedData = localStorage.getItem(`kb_${activeId}`);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    if (data.length > 0) {
+                        knowledgeResponses = data.map(p => ({
+                            keywords: p.keywords.split(',').map(k => k.trim()),
+                            response: p.response
+                        }));
+                    }
                 }
             }
         } catch (error) {
-            console.error('Failed to load local knowledge base, using defaults:', error);
+            console.error('Failed to load knowledge from Firebase, using defaults:', error);
         }
     }
 
@@ -77,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadKnowledge();
 
     async function getBotResponse(input) {
-        const API_KEY = "AIzaSyC71gUDFZp0O_PXCsEPEdliXYhKUTnNwa0";
+        const API_KEY = "AIzaSyDocqGqvVQgj6JIisz-sQVBMkIoR_DI2zE";
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
         const context = JSON.stringify(knowledgeResponses);
@@ -199,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         handleSend();
     };
 
-    function loadQuickReplies() {
+    async function loadQuickReplies() {
         const activeId = localStorage.getItem('active_college_slug') || 'pu';
         const qrContainer = document.getElementById('quick-replies');
         if (!qrContainer) return;
@@ -212,12 +250,18 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
 
         try {
-            const savedQR = localStorage.getItem(`qr_${activeId}`);
-            if (savedQR) {
-                quickReplies = JSON.parse(savedQR);
+            const docRef = doc(db, "colleges", activeId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data().quickReplies) {
+                quickReplies = docSnap.data().quickReplies;
+            } else {
+                const savedQR = localStorage.getItem(`qr_${activeId}`);
+                if (savedQR) {
+                    quickReplies = JSON.parse(savedQR);
+                }
             }
         } catch (error) {
-            console.error('Failed to load quick replies from storage:', error);
+            console.error('Failed to load quick replies from Firebase:', error);
         }
 
         qrContainer.innerHTML = '';

@@ -1,3 +1,19 @@
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "firebase/firestore";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCJNlX4nS00qIxF0lW5AttjYEPOlcETb-Y",
+    authDomain: "smart-collage-project.firebaseapp.com",
+    projectId: "smart-collage-project",
+    storageBucket: "smart-collage-project.firebasestorage.app",
+    messagingSenderId: "157281122997",
+    appId: "1:157281122997:web:e7e6654e1d0a0b2fbd5cfc",
+    measurementId: "G-HQY0GNNNJG"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 document.addEventListener('DOMContentLoaded', () => {
     // Tab Switching Logic
     const navItems = document.querySelectorAll('.nav-item');
@@ -139,16 +155,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadColleges() {
         try {
-            const savedColleges = localStorage.getItem('managed_colleges');
-            if (savedColleges) {
-                colleges = JSON.parse(savedColleges);
+            const querySnapshot = await getDocs(collection(db, "colleges"));
+            if (!querySnapshot.empty) {
+                colleges = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.id) colleges.push(data);
+                });
             } else {
-                colleges = [
-                    { id: 1, name: 'Poornima University', slug: 'pu', tagline: 'Shaping Your Future, Inspiring Excellence', brand_color: '#4A90E2' },
-                    { id: 2, name: 'Poornima College of Engg.', slug: 'pce', tagline: 'Engineering the Future', brand_color: '#E056FD' }
-                ];
-                localStorage.setItem('managed_colleges', JSON.stringify(colleges));
+                // Fallback / initial setup
+                const savedColleges = localStorage.getItem('managed_colleges');
+                if (savedColleges) {
+                    colleges = JSON.parse(savedColleges);
+                } else {
+                    colleges = [
+                        { id: 1, name: 'Poornima University', slug: 'pu', tagline: 'Shaping Your Future, Inspiring Excellence', brand_color: '#4A90E2' },
+                        { id: 2, name: 'Poornima College of Engg.', slug: 'pce', tagline: 'Engineering the Future', brand_color: '#E056FD' }
+                    ];
+                }
+                // Save defaults to Firebase
+                for (const c of colleges) {
+                    await setDoc(doc(db, "colleges", c.slug), c, { merge: true });
+                }
             }
+
             updateCollegeSelector();
             renderCollegesGrid();
             if (colleges.length > 0 && !colleges.find(c => c.slug === activeId)) {
@@ -157,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadKnowledge();
             if (typeof loadQuickReplies === 'function') loadQuickReplies();
         } catch (error) {
-            console.error('Failed to load colleges:', error);
+            console.error('Failed to load colleges from Firebase:', error);
         }
     }
 
@@ -216,9 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 brand_color: '#4A90E2'
             };
             colleges.push(newCollege);
-            localStorage.setItem('managed_colleges', JSON.stringify(colleges));
+            await setDoc(doc(db, "colleges", slug), newCollege, { merge: true });
+            
             loadColleges();
-            alert('College added locally!');
+            alert('College added to Firebase!');
         });
     }
 
@@ -232,18 +263,24 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadKnowledge() {
         if (!activeId) return;
         try {
-            const savedKnowledge = localStorage.getItem(`kb_${activeId}`);
-            if (savedKnowledge) {
-                currentKnowledge = JSON.parse(savedKnowledge);
+            const docRef = doc(db, "colleges", activeId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data().knowledge) {
+                currentKnowledge = docSnap.data().knowledge;
             } else {
-                currentKnowledge = [
-                    { keywords: "location, where", response: "We are located at ISI-2, RIICO Institutional Area, Sitapura, Jaipur, Rajasthan 302022" },
-                    { keywords: "fee, cost", response: "The fees structure varies... check out our website." }
-                ];
+                const savedKnowledge = localStorage.getItem(`kb_${activeId}`);
+                if (savedKnowledge) {
+                    currentKnowledge = JSON.parse(savedKnowledge);
+                } else {
+                    currentKnowledge = [
+                        { keywords: "location, where", response: "We are located at ISI-2, RIICO Institutional Area, Sitapura, Jaipur, Rajasthan 302022" },
+                        { keywords: "fee, cost", response: "The fees structure varies... check out our website." }
+                    ];
+                }
             }
             renderKnowledge();
         } catch (error) {
-            console.error('Failed to load knowledge:', error);
+            console.error('Failed to load knowledge from Firebase:', error);
         }
     }
 
@@ -290,8 +327,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 response: responses[i].value
             }));
 
-            localStorage.setItem(`kb_${activeId}`, JSON.stringify(updatedKnowledge));
-            alert(`Knowledge base updated locally for ${activeId.toUpperCase()}!`);
+            await setDoc(doc(db, "colleges", activeId), { knowledge: updatedKnowledge }, { merge: true });
+            alert(`Knowledge base updated in Firebase for ${activeId.toUpperCase()}!`);
         });
     }
 
@@ -305,20 +342,26 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadQuickReplies = async function() {
         if (!activeId) return;
         try {
-            const savedQR = localStorage.getItem(`qr_${activeId}`);
-            if (savedQR) {
-                currentQuickReplies = JSON.parse(savedQR);
+            const docRef = doc(db, "colleges", activeId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data().quickReplies) {
+                currentQuickReplies = docSnap.data().quickReplies;
             } else {
-                currentQuickReplies = [
-                    { label: "Campus", text: "Location" },
-                    { label: "Programs", text: "Programs" },
-                    { label: "Placements", text: "Placements" },
-                    { label: "Scholarships", text: "Fees" }
-                ];
+                const savedQR = localStorage.getItem(`qr_${activeId}`);
+                if (savedQR) {
+                    currentQuickReplies = JSON.parse(savedQR);
+                } else {
+                    currentQuickReplies = [
+                        { label: "Campus", text: "Location" },
+                        { label: "Programs", text: "Programs" },
+                        { label: "Placements", text: "Placements" },
+                        { label: "Scholarships", text: "Fees" }
+                    ];
+                }
             }
             renderQuickReplies();
         } catch (error) {
-            console.error('Failed to load quick replies:', error);
+            console.error('Failed to load quick replies from Firebase:', error);
         }
     }
 
@@ -369,8 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 text: texts[i].value.trim()
             })).filter(qr => qr.label !== '' && qr.text !== '');
 
-            localStorage.setItem(`qr_${activeId}`, JSON.stringify(updatedQR));
-            alert(`Quick replies updated locally for ${activeId.toUpperCase()}!`);
+            await setDoc(doc(db, "colleges", activeId), { quickReplies: updatedQR }, { merge: true });
+            alert(`Quick replies updated in Firebase for ${activeId.toUpperCase()}!`);
             currentQuickReplies = updatedQR;
             renderQuickReplies();
         });
@@ -425,10 +468,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 colleges[targetIdx].name = newBranding.name;
                 colleges[targetIdx].brand_color = newBranding.color;
                 colleges[targetIdx].tagline = newBranding.tagline;
-                localStorage.setItem('managed_colleges', JSON.stringify(colleges));
+                
+                await setDoc(doc(db, "colleges", activeId), {
+                    name: newBranding.name,
+                    brand_color: newBranding.color,
+                    tagline: newBranding.tagline
+                }, { merge: true });
             }
 
-            alert('Network branding updated!');
+            alert('Network branding updated in Firebase!');
             location.reload();
         });
     }
